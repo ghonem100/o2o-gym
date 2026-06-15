@@ -1,5 +1,10 @@
 # O2O Gym Management System
 
+[![CI](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml)
+
+> Replace `OWNER/REPO` in the badge URL above with your GitHub `owner/repository`
+> (e.g. `ghonim/o2o-gym`) once the repo is pushed.
+
 Professional gym management system for **O2O Gym**, El-Menoufia, Egypt.
 
 Monorepo with a Node.js/Express/Prisma backend and a Next.js 14 frontend.
