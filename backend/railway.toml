@@ -1,0 +1,17 @@
+# Railway deployment configuration for the O2O Gym backend.
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# Schema is created once via prisma/migration.sql in the Supabase SQL editor
+# (see DEPLOYMENT.md). DDL through the pooled pgBouncer connection is unreliable,
+# so we do NOT run `prisma db push` at boot — just start the compiled server.
+startCommand = "node dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5
+numReplicas = 1
