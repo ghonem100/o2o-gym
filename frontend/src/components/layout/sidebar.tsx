@@ -14,6 +14,7 @@ import {
   LogOut,
   Dumbbell,
   PlusCircle,
+  ShoppingBag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
@@ -34,6 +35,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/attendance', label: 'nav.attendance', icon: ScanFace, roles: ['owner', 'receptionist'] },
   { href: '/members', label: 'nav.members', icon: Users, roles: ['owner', 'receptionist'] },
   { href: '/subscriptions/new', label: 'nav.newSubscription', icon: PlusCircle, roles: ['owner', 'receptionist'] },
+  { href: '/products', label: 'nav.products', icon: ShoppingBag, roles: ['owner', 'receptionist'] },
   { href: '/payments', label: 'nav.payments', icon: CreditCard, roles: ['owner'] },
   { href: '/expenses', label: 'nav.expenses', icon: Receipt, roles: ['owner'] },
   { href: '/analytics', label: 'nav.analytics', icon: BarChart3, roles: ['owner'] },

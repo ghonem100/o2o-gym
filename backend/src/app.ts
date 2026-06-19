@@ -13,6 +13,7 @@ import analyticsRoutes from './modules/analytics/analytics.routes';
 import notificationsRoutes from './modules/notifications/notifications.routes';
 import settingsRoutes from './modules/settings/settings.routes';
 import uploadsRoutes from './modules/uploads/uploads.routes';
+import productsRoutes from './modules/products/products.routes';
 
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
@@ -62,6 +63,7 @@ app.use(`${API_V1}/analytics`, analyticsRoutes);
 app.use(`${API_V1}/notifications`, notificationsRoutes);
 app.use(`${API_V1}/settings`, settingsRoutes);
 app.use(`${API_V1}/uploads`, uploadsRoutes);
+app.use(`${API_V1}/products`, productsRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

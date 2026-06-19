@@ -169,6 +169,8 @@ export function useDailySummary() {
     queryFn: async () => {
       const { data } = await api.get<ApiResponse<{
         totalRevenue: number;
+        subscriptionRevenue: number;
+        productRevenue: number;
         totalExpenses: number;
         netProfit: number;
         byMethod: Record<string, number>;

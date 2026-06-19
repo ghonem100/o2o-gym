@@ -104,7 +104,10 @@ export async function getDailySummary(gymId: string, date?: string) {
   const targetDate = date ? new Date(date) : new Date();
   targetDate.setHours(0, 0, 0, 0);
 
-  const [payments, expensesSummary] = await prisma.$transaction([
+  const dayEnd = new Date(targetDate);
+  dayEnd.setHours(23, 59, 59, 999);
+
+  const [payments, expensesSummary, productSales] = await prisma.$transaction([
     prisma.payment.findMany({
       where: { gymId, paymentDate: targetDate, isRefunded: false },
       include: {
@@ -116,23 +119,35 @@ export async function getDailySummary(gymId: string, date?: string) {
       where: { gymId, expenseDate: targetDate },
       _sum: { amount: true },
     }),
+    prisma.productSale.findMany({
+      where: { gymId, createdAt: { gte: targetDate, lte: dayEnd } },
+      select: { paymentMethod: true, totalPrice: true },
+    }),
   ]);
 
-  const totalRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const subscriptionRevenue = payments.reduce((sum, p) => sum + Number(p.amount), 0);
+  const productRevenue = productSales.reduce((sum, s) => sum + Number(s.totalPrice), 0);
+  const totalRevenue = subscriptionRevenue + productRevenue;
   const totalExpenses = Number(expensesSummary._sum.amount ?? 0);
 
+  // Combine subscription + product revenue per payment method
   const byMethod: Record<string, number> = {};
   for (const p of payments) {
     byMethod[p.paymentMethod] = (byMethod[p.paymentMethod] ?? 0) + Number(p.amount);
+  }
+  for (const s of productSales) {
+    byMethod[s.paymentMethod] = (byMethod[s.paymentMethod] ?? 0) + Number(s.totalPrice);
   }
 
   return {
     date: targetDate,
     payments,
     totalRevenue,
+    subscriptionRevenue,
+    productRevenue,
     totalExpenses,
     netProfit: totalRevenue - totalExpenses,
     byMethod,
-    transactionCount: payments.length,
+    transactionCount: payments.length + productSales.length,
   };
 }

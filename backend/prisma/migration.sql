@@ -256,6 +256,37 @@ CREATE TABLE "audit_logs" (
     CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "products" (
+    "id" TEXT NOT NULL,
+    "gym_id" TEXT NOT NULL,
+    "name" VARCHAR(100) NOT NULL,
+    "name_ar" VARCHAR(100),
+    "price" DECIMAL(10,2) NOT NULL,
+    "stock_quantity" INTEGER NOT NULL DEFAULT 0,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL,
+
+    CONSTRAINT "products_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "product_sales" (
+    "id" TEXT NOT NULL,
+    "gym_id" TEXT NOT NULL,
+    "product_id" TEXT NOT NULL,
+    "member_id" TEXT,
+    "quantity" INTEGER NOT NULL,
+    "unit_price" DECIMAL(10,2) NOT NULL,
+    "total_price" DECIMAL(10,2) NOT NULL,
+    "payment_method" "PaymentMethod" NOT NULL,
+    "sold_by" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "product_sales_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_gym_id_username_key" ON "users"("gym_id", "username");
 
@@ -306,6 +337,15 @@ CREATE INDEX "audit_logs_user_id_created_at_idx" ON "audit_logs"("user_id", "cre
 
 -- CreateIndex
 CREATE INDEX "audit_logs_gym_id_created_at_idx" ON "audit_logs"("gym_id", "created_at");
+
+-- CreateIndex
+CREATE INDEX "products_gym_id_idx" ON "products"("gym_id");
+
+-- CreateIndex
+CREATE INDEX "product_sales_gym_id_created_at_idx" ON "product_sales"("gym_id", "created_at");
+
+-- CreateIndex
+CREATE INDEX "product_sales_product_id_idx" ON "product_sales"("product_id");
 
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_gym_id_fkey" FOREIGN KEY ("gym_id") REFERENCES "gyms"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -387,4 +427,19 @@ ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_gym_id_fkey" FOREIGN KEY ("g
 
 -- AddForeignKey
 ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "products" ADD CONSTRAINT "products_gym_id_fkey" FOREIGN KEY ("gym_id") REFERENCES "gyms"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_sales" ADD CONSTRAINT "product_sales_gym_id_fkey" FOREIGN KEY ("gym_id") REFERENCES "gyms"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_sales" ADD CONSTRAINT "product_sales_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_sales" ADD CONSTRAINT "product_sales_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "members"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "product_sales" ADD CONSTRAINT "product_sales_sold_by_fkey" FOREIGN KEY ("sold_by") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

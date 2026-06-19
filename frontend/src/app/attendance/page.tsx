@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
-import { Dumbbell, Keyboard, Users, ArrowLeft, Loader2 } from 'lucide-react';
+import { Dumbbell, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { api, getApiErrorMessage } from '@/lib/api';
 import { ApiResponse, CheckInResult } from '@/types';
@@ -14,6 +14,8 @@ import { base64ToDescriptor, LabeledDescriptor } from '@/lib/face-engine';
 import { FaceCamera } from '@/components/attendance/face-camera';
 import { CheckInResultOverlay } from '@/components/attendance/check-in-result';
 import { ManualCheckInDialog } from '@/components/attendance/manual-check-in-dialog';
+import { BarcodeCheckIn } from '@/components/attendance/barcode-check-in';
+import { QuickSellPanel } from '@/components/attendance/quick-sell-panel';
 import { Button } from '@/components/ui/button';
 import { LanguageToggle } from '@/components/layout/language-toggle';
 import { formatTime } from '@/lib/utils';
@@ -82,7 +84,10 @@ export default function AttendanceKioskPage() {
     [busy, barcodeCheckIn]
   );
 
-  useBarcodeScanner(handleBarcode, !manualOpen);
+  // Global window-level scanner is a fallback for when focus leaves the visible
+  // barcode field; the visible input handles the common case. Disabled while a
+  // dialog or result overlay is showing.
+  useBarcodeScanner(handleBarcode, !manualOpen && !result);
 
   const handleManual = (memberId: string, notes?: string) => {
     manualCheckIn.mutate(
@@ -126,43 +131,35 @@ export default function AttendanceKioskPage() {
       </header>
 
       {/* Main kiosk area */}
-      <div className="flex flex-1 items-center justify-center overflow-hidden p-8">
-        <div className="grid w-full max-w-6xl gap-8 lg:grid-cols-[1.4fr,1fr]">
+      <div className="flex-1 overflow-y-auto p-6 lg:p-8">
+        <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.4fr,1fr]">
           {/* Camera */}
-          <FaceCamera candidates={candidates} onMatch={handleFaceMatch} paused={busy} />
+          <div className="lg:row-span-2">
+            <FaceCamera candidates={candidates} onMatch={handleFaceMatch} paused={busy} />
+            <p className="mt-3 text-center text-muted-foreground">
+              {candidates.length === 0 && t('attendance.useBarcodeManual')}
+            </p>
+          </div>
 
-          {/* Side panel */}
-          <div className="flex flex-col justify-center gap-6">
-            <div className="text-center lg:text-start">
-              <h2 className="text-3xl font-bold">{t('attendance.scanFace')}</h2>
-              <p className="mt-2 text-muted-foreground">
-                {candidates.length === 0 && t('attendance.useBarcodeManual')}
-              </p>
-            </div>
+          {/* Check-in controls */}
+          <div className="space-y-4">
+            <BarcodeCheckIn onScan={handleBarcode} loading={barcodeCheckIn.isPending} autoFocus={!manualOpen && !result} />
 
-            <div className="space-y-3">
-              <div className="rounded-2xl border bg-card p-5">
-                <div className="flex items-center gap-3 text-primary">
-                  <Keyboard className="h-6 w-6" />
-                  <div>
-                    <p className="font-semibold">{t('attendance.barcodeMode')}</p>
-                    <p className="text-sm text-muted-foreground">{t('attendance.scanBarcode')}</p>
-                  </div>
-                  {barcodeCheckIn.isPending && <Loader2 className="ms-auto h-5 w-5 animate-spin" />}
-                </div>
-              </div>
+            <Button
+              size="xl"
+              variant="outline"
+              className="w-full justify-start gap-3"
+              onClick={() => setManualOpen(true)}
+              disabled={busy}
+            >
+              <Users className="h-6 w-6" />
+              {t('attendance.manualMode')}
+            </Button>
+          </div>
 
-              <Button
-                size="xl"
-                variant="outline"
-                className="w-full justify-start gap-3"
-                onClick={() => setManualOpen(true)}
-                disabled={busy}
-              >
-                <Users className="h-6 w-6" />
-                {t('attendance.manualMode')}
-              </Button>
-            </div>
+          {/* Quick-sell */}
+          <div className="lg:col-start-2">
+            <QuickSellPanel />
           </div>
         </div>
       </div>

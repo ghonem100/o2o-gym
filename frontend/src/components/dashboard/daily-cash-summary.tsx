@@ -36,6 +36,20 @@ export function DailyCashSummary() {
           </p>
         </div>
 
+        {/* Subscription vs product split */}
+        {(data?.productRevenue ?? 0) > 0 && (
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border p-2 text-center">
+              <p className="text-xs text-muted-foreground">{t('subscriptions.title')}</p>
+              <p className="font-semibold">{formatCurrency(data?.subscriptionRevenue ?? 0, i18n.language)}</p>
+            </div>
+            <div className="rounded-lg border p-2 text-center">
+              <p className="text-xs text-muted-foreground">{t('products.productRevenue')}</p>
+              <p className="font-semibold">{formatCurrency(data?.productRevenue ?? 0, i18n.language)}</p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           {Object.entries(data?.byMethod ?? {}).map(([method, amount]) => {
             const meta = METHOD_META[method] ?? { label: method, icon: Wallet };

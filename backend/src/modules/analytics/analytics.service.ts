@@ -17,6 +17,8 @@ export async function getDashboardKPIs(gymId: string) {
     monthExpenses,
     expiringCount,
     newMembersThisMonth,
+    todayProductSales,
+    monthProductSales,
   ] = await prisma.$transaction([
     prisma.member.count({ where: { gymId } }),
     prisma.subscription.count({ where: { gymId, status: 'active' } }),
@@ -44,9 +46,20 @@ export async function getDashboardKPIs(gymId: string) {
       },
     }),
     prisma.member.count({ where: { gymId, createdAt: { gte: thisMonthStart } } }),
+    prisma.productSale.aggregate({
+      where: { gymId, createdAt: { gte: today } },
+      _sum: { totalPrice: true },
+    }),
+    prisma.productSale.aggregate({
+      where: { gymId, createdAt: { gte: thisMonthStart } },
+      _sum: { totalPrice: true },
+    }),
   ]);
 
-  const monthRev = Number(monthRevenue._sum.amount ?? 0);
+  const todayProductRev = Number(todayProductSales._sum.totalPrice ?? 0);
+  const monthProductRev = Number(monthProductSales._sum.totalPrice ?? 0);
+  const todayRev = Number(todayRevenue._sum.amount ?? 0) + todayProductRev;
+  const monthRev = Number(monthRevenue._sum.amount ?? 0) + monthProductRev;
   const lastMonthRev = Number(lastMonthRevenue._sum.amount ?? 0);
   const monthExp = Number(monthExpenses._sum.amount ?? 0);
 
@@ -54,8 +67,10 @@ export async function getDashboardKPIs(gymId: string) {
     totalMembers,
     activeMembers,
     todayCheckIns,
-    todayRevenue: Number(todayRevenue._sum.amount ?? 0),
+    todayRevenue: todayRev,
+    todayProductRevenue: todayProductRev,
     monthRevenue: monthRev,
+    monthProductRevenue: monthProductRev,
     lastMonthRevenue: lastMonthRev,
     revenueGrowth: lastMonthRev > 0 ? ((monthRev - lastMonthRev) / lastMonthRev) * 100 : null,
     monthExpenses: monthExp,
@@ -321,7 +336,10 @@ export async function getProfitabilityReport(gymId: string, dateFrom: string, da
   const from = new Date(dateFrom);
   const to = new Date(dateTo);
 
-  const [revenueData, expenseData, activeMembers] = await prisma.$transaction([
+  const toEnd = new Date(to);
+  toEnd.setHours(23, 59, 59, 999);
+
+  const [revenueData, expenseData, activeMembers, productRevenueData] = await prisma.$transaction([
     prisma.payment.aggregate({
       where: { gymId, paymentDate: { gte: from, lte: to }, isRefunded: false },
       _sum: { amount: true },
@@ -332,9 +350,15 @@ export async function getProfitabilityReport(gymId: string, dateFrom: string, da
       select: { category: true, amount: true },
     }),
     prisma.subscription.count({ where: { gymId, status: 'active' } }),
+    prisma.productSale.aggregate({
+      where: { gymId, createdAt: { gte: from, lte: toEnd } },
+      _sum: { totalPrice: true },
+    }),
   ]);
 
-  const totalRevenue = Number(revenueData._sum.amount ?? 0);
+  const subscriptionRevenue = Number(revenueData._sum.amount ?? 0);
+  const productRevenue = Number(productRevenueData._sum.totalPrice ?? 0);
+  const totalRevenue = subscriptionRevenue + productRevenue;
   const expensesByCategory: Record<string, number> = {};
   let totalExpenses = 0;
 
@@ -345,6 +369,8 @@ export async function getProfitabilityReport(gymId: string, dateFrom: string, da
 
   return {
     totalRevenue,
+    subscriptionRevenue,
+    productRevenue,
     totalExpenses,
     netProfit: totalRevenue - totalExpenses,
     profitMargin: totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0,
