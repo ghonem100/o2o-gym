@@ -6,6 +6,7 @@ dist/
 .next/
 out/
 build/
+*.tsbuildinfo
 
 # Env files (never commit secrets)
 .env
@@ -15,9 +16,6 @@ build/
 # Logs
 logs/
 *.log
-
-# Prisma local migrations (schema managed via prisma/migration.sql)
-backend/prisma/migrations/
 
 # Face-api model weights (downloaded separately, see public/models/README.md)
 frontend/public/models/*-shard*
