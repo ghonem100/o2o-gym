@@ -129,7 +129,9 @@
     "searchPlaceholder": "ابحث بالاسم أو الهاتف أو رقم العضوية",
     "notes": "ملاحظات",
     "createSuccess": "تم إضافة العضو بنجاح",
-    "memberSince": "عضو منذ"
+    "memberSince": "عضو منذ",
+    "printCard": "طباعة الكارت",
+    "membershipCard": "كارت العضوية"
   },
   "subscriptions": {
     "title": "الاشتراكات",

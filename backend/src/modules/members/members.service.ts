@@ -11,8 +11,10 @@ function generateMemberNumber(gymId: string, count: number): string {
   return `${prefix}${String(count + 1).padStart(5, '0')}`;
 }
 
-function generateBarcode(memberId: string): string {
-  return `GYM${memberId.replace(/-/g, '').slice(0, 12).toUpperCase()}`;
+function generateBarcode(memberNumber: string): string {
+  // Keep only digits so the barcode equals the numeric member number,
+  // e.g. memberNumber "6591F3D900001" -> barcode "659100001".
+  return memberNumber.replace(/[^0-9]/g, '');
 }
 
 export async function createMember(
@@ -39,7 +41,7 @@ export async function createMember(
     },
   });
 
-  const barcode = generateBarcode(member.id);
+  const barcode = generateBarcode(memberNumber);
   const updated = await prisma.member.update({
     where: { id: member.id },
     data: { barcode },

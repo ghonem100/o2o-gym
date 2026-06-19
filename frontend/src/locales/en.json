@@ -129,7 +129,9 @@
     "searchPlaceholder": "Search by name, phone or member no.",
     "notes": "Notes",
     "createSuccess": "Member added successfully",
-    "memberSince": "Member since"
+    "memberSince": "Member since",
+    "printCard": "Print Card",
+    "membershipCard": "Membership Card"
   },
   "subscriptions": {
     "title": "Subscriptions",

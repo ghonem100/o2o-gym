@@ -160,11 +160,15 @@ export async function barcodeCheckIn(
   data: BarcodeCheckInInput,
   req: Request
 ): Promise<CheckInResult> {
+  const input = data.barcode.trim();
   const member = await prisma.member.findFirst({
-    where: { barcode: data.barcode, gymId },
+    where: {
+      gymId,
+      OR: [{ barcode: input }, { memberNumber: input }],
+    },
     select: { id: true },
   });
-  if (!member) throw new NotFoundError('No member found with this barcode');
+  if (!member) throw new NotFoundError('No member found with this barcode or member number');
   return performCheckIn(gymId, member.id, 'barcode', userId, undefined, req);
 }
 

@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FaceEnrollment } from '@/components/members/face-enrollment';
+import { MemberBarcodeCard } from '@/components/members/member-barcode-card';
 import { formatDate, formatCurrency } from '@/lib/utils';
 
 interface ProfileData {
@@ -33,6 +34,7 @@ interface ProfileData {
   fullName: string;
   memberNumber: string;
   phone: string;
+  barcode: string | null;
   photoUrl: string | null;
   status: string;
   createdAt: string;
@@ -64,6 +66,7 @@ export default function MemberProfilePage() {
   const params = useParams();
   const id = params.id as string;
   const isOwner = useAuthStore((s) => s.isOwner());
+  const gymName = useAuthStore((s) => s.user?.gymName);
   const [enrollOpen, setEnrollOpen] = useState(false);
 
   const { data, isLoading, refetch } = useMemberProfile(id);
@@ -121,6 +124,16 @@ export default function MemberProfilePage() {
                 <ScanFace className="h-4 w-4" />
                 {member.hasFace ? t('enrollment.reEnroll') : t('enrollment.captureFace')}
               </Button>
+            )}
+
+            {member.barcode && (
+              <MemberBarcodeCard
+                barcode={member.barcode}
+                fullName={member.fullName}
+                memberNumber={member.memberNumber}
+                photoUrl={member.photoUrl}
+                gymName={gymName}
+              />
             )}
 
             <p className="text-xs text-muted-foreground">
