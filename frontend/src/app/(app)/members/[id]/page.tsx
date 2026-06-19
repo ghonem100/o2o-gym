@@ -228,22 +228,4 @@ export default function MemberProfilePage() {
 
       {/* Re-enroll dialog (Owner) */}
       <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('enrollment.reEnroll')}</DialogTitle>
-          </DialogHeader>
-          {enrollOpen && (
-            <FaceEnrollment
-              memberId={member.id}
-              onComplete={() => {
-                setEnrollOpen(false);
-                refetch();
-              }}
-              onSkip={() => setEnrollOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+        <Dial

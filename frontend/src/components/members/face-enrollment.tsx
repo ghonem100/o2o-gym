@@ -38,10 +38,11 @@ export function FaceEnrollment({ memberId, onComplete, onSkip }: Props) {
     let cancelled = false;
     async function init() {
       try {
-        await loadFaceModels();
+        // Request camera BEFORE loading models so user-gesture stays active.
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480, facingMode: 'user' },
         });
+        await loadFaceModels();
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -198,10 +199,4 @@ export function FaceEnrollment({ memberId, onComplete, onSkip }: Props) {
               }}
             >
               {t('enrollment.skip')}
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+   

@@ -74,29 +74,4 @@ async function main() {
 
   // One-time backfill: convert legacy 'GYM...' barcodes (or missing ones) to the
   // numeric member number so staff can type the member number to check in.
-  const legacy = await prisma.member.findMany({
-    where: { OR: [{ barcode: { startsWith: 'GYM' } }, { barcode: null }] },
-    select: { id: true, memberNumber: true },
-  });
-  let fixed = 0;
-  for (const m of legacy) {
-    const numeric = m.memberNumber.replace(/[^0-9]/g, '');
-    if (!numeric) continue;
-    try {
-      await prisma.member.update({ where: { id: m.id }, data: { barcode: numeric } });
-      fixed++;
-    } catch {
-      // barcode unique collision — leave as-is
-    }
-  }
-  if (fixed > 0) console.log(`✅ Backfilled ${fixed} member barcode(s) to numeric member number`);
-
-  console.log('✅ Seed complete');
-}
-
-main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+  const legacy

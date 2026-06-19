@@ -322,7 +322,4 @@
     "daysBeforeExpiry": "Days before expiry to remind",
     "messageTemplate": "Reminder message template",
     "templateHint": "Available variables: {memberName}, {endDate}, {gymPhone}",
-    "saveNotifications": "Save settings",
-    "notificationsSaved": "Notification settings saved"
-  }
-}
+    "saveNotifications": "Save s

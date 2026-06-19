@@ -60,7 +60,10 @@ export function FaceCamera({ candidates, onMatch, paused }: Props) {
     setStatus('loading');
     stopStream();
     try {
-      await loadFaceModels();
+      // ⚠️ getUserMedia MUST be called BEFORE any await (loadFaceModels)
+      // so it executes while the user-gesture activation is still valid.
+      // Browsers (Edge/Chrome) silently deny camera access if the gesture
+      // has expired — which happens when we await model loading first.
 
       // Build constraints: prefer a specific device, else front-facing.
       const constraints: MediaStreamConstraints = {
@@ -80,6 +83,9 @@ export function FaceCamera({ candidates, onMatch, paused }: Props) {
           throw err;
         }
       }
+
+      // Load face models AFTER camera access is granted (no gesture needed here).
+      await loadFaceModels();
 
       streamRef.current = stream;
       if (videoRef.current) {
@@ -202,19 +208,4 @@ export function FaceCamera({ candidates, onMatch, paused }: Props) {
                 {devices.map((d, i) => (
                   <option key={d.deviceId} value={d.deviceId}>
                     {d.label || `${t('attendance.builtInCamera')} ${i + 1}`}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-        </div>
-      )}
-
-      {status === 'ready' && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-6 py-2 text-white">
-          {paused ? t('attendance.scanning') : t('attendance.scanFace')}
-        </div>
-      )}
-    </div>
-  );
-}
+      
