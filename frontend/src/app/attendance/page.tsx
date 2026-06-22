@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
 import { Dumbbell, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { api, getApiErrorMessage } from '@/lib/api';
-import { ApiResponse, CheckInResult } from '@/types';
-import { useFaceCheckIn, useBarcodeCheckIn, useManualCheckIn, useTodayAttendance } from '@/hooks/use-api';
+import { getApiErrorMessage } from '@/lib/api';
+import { CheckInResult } from '@/types';
+import { useBarcodeCheckIn, useManualCheckIn, useTodayAttendance } from '@/hooks/use-api';
 import { useBarcodeScanner } from '@/hooks/use-barcode-scanner';
-import { base64ToDescriptor, LabeledDescriptor } from '@/lib/face-engine';
-import { FaceCamera } from '@/components/attendance/face-camera';
+import { QrScanner } from '@/components/attendance/qr-scanner';
 import { CheckInResultOverlay } from '@/components/attendance/check-in-result';
 import { ManualCheckInDialog } from '@/components/attendance/manual-check-in-dialog';
 import { BarcodeCheckIn } from '@/components/attendance/barcode-check-in';
@@ -20,61 +18,23 @@ import { Button } from '@/components/ui/button';
 import { LanguageToggle } from '@/components/layout/language-toggle';
 import { formatTime } from '@/lib/utils';
 
-interface FaceDescriptorDTO {
-  memberId: string;
-  descriptor: string;
-}
-
 export default function AttendanceKioskPage() {
   const { t, i18n } = useTranslation();
   const [result, setResult] = useState<CheckInResult | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
 
-  const faceCheckIn = useFaceCheckIn();
   const barcodeCheckIn = useBarcodeCheckIn();
   const manualCheckIn = useManualCheckIn();
   const today = useTodayAttendance();
 
-  // Load member face descriptors for local matching
-  const { data: descriptors } = useQuery({
-    queryKey: ['face-descriptors'],
-    queryFn: async () => {
-      const { data } = await api.get<ApiResponse<FaceDescriptorDTO[]>>('/members/face-descriptors');
-      return data.data;
-    },
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
+  const busy = barcodeCheckIn.isPending || manualCheckIn.isPending || !!result;
 
-  const candidates: LabeledDescriptor[] = useMemo(() => {
-    if (!descriptors) return [];
-    return descriptors.map((d) => ({
-      memberId: d.memberId,
-      descriptor: base64ToDescriptor(d.descriptor),
-    }));
-  }, [descriptors]);
-
-  const busy = faceCheckIn.isPending || barcodeCheckIn.isPending || manualCheckIn.isPending || !!result;
-
-  const handleFaceMatch = useCallback(
-    (memberId: string, confidence: number) => {
-      if (busy) return;
-      faceCheckIn.mutate(
-        { memberId, confidence },
-        {
-          onSuccess: (res) => setResult(res),
-          onError: (err) => toast.error(getApiErrorMessage(err)),
-        }
-      );
-    },
-    [busy, faceCheckIn]
-  );
-
-  const handleBarcode = useCallback(
-    (barcode: string) => {
+  /** Shared handler for QR scan AND USB barcode scanner AND manual barcode entry */
+  const handleCode = useCallback(
+    (code: string) => {
       if (busy) return;
       barcodeCheckIn.mutate(
-        { barcode },
+        { barcode: code },
         {
           onSuccess: (res) => setResult(res),
           onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -84,10 +44,8 @@ export default function AttendanceKioskPage() {
     [busy, barcodeCheckIn]
   );
 
-  // Global window-level scanner is a fallback for when focus leaves the visible
-  // barcode field; the visible input handles the common case. Disabled while a
-  // dialog or result overlay is showing.
-  useBarcodeScanner(handleBarcode, !manualOpen && !result);
+  // Global window-level scanner (USB barcode gun fallback)
+  useBarcodeScanner(handleCode, !manualOpen && !result);
 
   const handleManual = (memberId: string, notes?: string) => {
     manualCheckIn.mutate(
@@ -133,17 +91,19 @@ export default function AttendanceKioskPage() {
       {/* Main kiosk area */}
       <div className="flex-1 overflow-y-auto p-6 lg:p-8">
         <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1.4fr,1fr]">
-          {/* Camera */}
+
+          {/* QR Scanner */}
           <div className="lg:row-span-2">
-            <FaceCamera candidates={candidates} onMatch={handleFaceMatch} paused={busy} />
-            <p className="mt-3 text-center text-muted-foreground">
-              {candidates.length === 0 && t('attendance.useBarcodeManual')}
-            </p>
+            <QrScanner onScan={handleCode} paused={busy} />
           </div>
 
-          {/* Check-in controls */}
+          {/* Barcode / QR text input + USB scanner field */}
           <div className="space-y-4">
-            <BarcodeCheckIn onScan={handleBarcode} loading={barcodeCheckIn.isPending} autoFocus={!manualOpen && !result} />
+            <BarcodeCheckIn
+              onScan={handleCode}
+              loading={barcodeCheckIn.isPending}
+              autoFocus={!manualOpen && !result}
+            />
 
             <Button
               size="xl"

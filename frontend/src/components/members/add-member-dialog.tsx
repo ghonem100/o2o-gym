@@ -25,8 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { FaceEnrollment } from './face-enrollment';
-
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -37,8 +35,6 @@ export function AddMemberDialog({ open, onOpenChange }: Props) {
   const createMember = useCreateMember();
   const uploadImage = useUploadImage();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [step, setStep] = useState<'details' | 'face'>('details');
-  const [newMemberId, setNewMemberId] = useState<string | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string>('');
   const [form, setForm] = useState({
     fullName: '',
@@ -51,8 +47,6 @@ export function AddMemberDialog({ open, onOpenChange }: Props) {
   const reset = () => {
     setForm({ fullName: '', phone: '', gender: '', birthDate: '', notes: '' });
     setPhotoUrl('');
-    setStep('details');
-    setNewMemberId(null);
   };
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,10 +75,9 @@ export function AddMemberDialog({ open, onOpenChange }: Props) {
     if (photoUrl) payload.photoUrl = photoUrl;
 
     createMember.mutate(payload, {
-      onSuccess: (member) => {
+      onSuccess: () => {
         toast.success(t('members.createSuccess'));
-        setNewMemberId(member.id);
-        setStep('face');
+        close();
       },
       onError: (err) => toast.error(getApiErrorMessage(err)),
     });
@@ -94,14 +87,9 @@ export function AddMemberDialog({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={(o) => (o ? onOpenChange(o) : close())}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {step === 'details' ? t('members.addMember') : t('enrollment.title')}
-          </DialogTitle>
+          <DialogTitle>{t('members.addMember')}</DialogTitle>
         </DialogHeader>
 
-        {step === 'face' && newMemberId ? (
-          <FaceEnrollment memberId={newMemberId} onComplete={close} onSkip={close} />
-        ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Photo upload */}
           <div className="flex flex-col items-center gap-3">
@@ -199,7 +187,6 @@ export function AddMemberDialog({ open, onOpenChange }: Props) {
             </Button>
           </DialogFooter>
         </form>
-        )}
       </DialogContent>
     </Dialog>
   );

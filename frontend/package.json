@@ -23,15 +23,16 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "face-api.js": "^0.22.2",
     "i18next": "^24.2.0",
     "i18next-browser-languagedetector": "^8.0.2",
+    "jsqr": "^1.4.0",
     "lucide-react": "^0.468.0",
     "next": "14.2.18",
     "react": "^18.3.1",
     "react-barcode": "^1.6.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.2.0",
+    "react-qr-code": "^2.2.0",
     "recharts": "^2.15.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
@@ -48,4 +49,6 @@
     "eslint-config-next": "14.2.18",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-  
+    "typescript": "^5.7.2"
+  }
+}

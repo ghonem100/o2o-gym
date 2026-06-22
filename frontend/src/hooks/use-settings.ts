@@ -79,3 +79,78 @@ export function useUpdatePlan() {
     },
   });
 }
+
+// ══════════════════════════════════════════════════════
+//  USERS MANAGEMENT
+// ══════════════════════════════════════════════════════
+
+export interface StaffUser {
+  id: string;
+  username: string;
+  fullName: string;
+  fullNameAr?: string;
+  role: 'owner' | 'receptionist';
+  phone?: string;
+  isActive: boolean;
+  lastLoginAt?: string;
+  createdAt: string;
+}
+
+export function useStaffUsers() {
+  return useQuery({
+    queryKey: ['staff-users'],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<StaffUser[]>>('/settings/users');
+      return data.data;
+    },
+  });
+}
+
+export function useCreateStaffUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      username: string; password: string;
+      fullName: string; fullNameAr?: string;
+      role: 'owner' | 'receptionist'; phone?: string;
+    }) => {
+      const { data } = await api.post<ApiResponse<StaffUser>>('/settings/users', payload);
+      return data.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['staff-users'] }),
+  });
+}
+
+export function useUpdateStaffUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: {
+      id: string; fullName?: string; fullNameAr?: string;
+      role?: 'owner' | 'receptionist'; phone?: string;
+    }) => {
+      const { data } = await api.put<ApiResponse<StaffUser>>(`/settings/users/${id}`, payload);
+      return data.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['staff-users'] }),
+  });
+}
+
+export function useToggleUserActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.put<ApiResponse<StaffUser>>(`/settings/users/${id}/toggle-active`, {});
+      return data.data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['staff-users'] }),
+  });
+}
+
+export function useResetUserPassword() {
+  return useMutation({
+    mutationFn: async ({ id, newPassword }: { id: string; newPassword: string }) => {
+      const { data } = await api.post<ApiResponse<unknown>>(`/settings/users/${id}/reset-password`, { newPassword });
+      return data.data;
+    },
+  });
+}

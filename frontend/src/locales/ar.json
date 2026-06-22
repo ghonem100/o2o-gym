@@ -322,4 +322,7 @@
     "daysBeforeExpiry": "أيام قبل الانتهاء للتذكير",
     "messageTemplate": "نص رسالة التذكير",
     "templateHint": "المتغيرات المتاحة: {memberName} و {endDate} و {gymPhone}",
-    "saveNotifications": "حفظ الإع
+    "saveNotifications": "حفظ الإعدادات",
+    "notificationsSaved": "تم حفظ إعدادات الإشعارات"
+  }
+}

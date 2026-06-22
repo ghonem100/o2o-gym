@@ -1,31 +1,21 @@
 'use client';
 
-import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import {
   ArrowLeft,
   Loader2,
-  ScanFace,
-  AlertTriangle,
   Phone,
   CalendarClock,
   CreditCard,
 } from 'lucide-react';
 import { useMemberProfile } from '@/hooks/use-api';
 import { useAuthStore } from '@/lib/store';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { FaceEnrollment } from '@/components/members/face-enrollment';
 import { MemberBarcodeCard } from '@/components/members/member-barcode-card';
 import { formatDate, formatCurrency } from '@/lib/utils';
 
@@ -38,7 +28,7 @@ interface ProfileData {
   photoUrl: string | null;
   status: string;
   createdAt: string;
-  hasFace?: boolean;
+
   daysRemaining: number | null;
   subscriptionAlert: string | null;
   activeSubscription: {
@@ -65,11 +55,9 @@ export default function MemberProfilePage() {
   const { t, i18n } = useTranslation();
   const params = useParams();
   const id = params.id as string;
-  const isOwner = useAuthStore((s) => s.isOwner());
   const gymName = useAuthStore((s) => s.user?.gymName);
-  const [enrollOpen, setEnrollOpen] = useState(false);
 
-  const { data, isLoading, refetch } = useMemberProfile(id);
+  const { data, isLoading } = useMemberProfile(id);
   const member = data as unknown as ProfileData | undefined;
 
   if (isLoading || !member) {
@@ -106,25 +94,6 @@ export default function MemberProfilePage() {
               <Phone className="h-4 w-4 text-muted-foreground" />
               {member.phone}
             </div>
-
-            {member.hasFace ? (
-              <Badge variant="success" className="gap-1">
-                <ScanFace className="h-3 w-3" />
-                {t('enrollment.enrolled')}
-              </Badge>
-            ) : (
-              <Badge variant="warning" className="gap-1">
-                <AlertTriangle className="h-3 w-3" />
-                {t('enrollment.notEnrolled')}
-              </Badge>
-            )}
-
-            {isOwner && (
-              <Button variant="outline" className="w-full gap-2" onClick={() => setEnrollOpen(true)}>
-                <ScanFace className="h-4 w-4" />
-                {member.hasFace ? t('enrollment.reEnroll') : t('enrollment.captureFace')}
-              </Button>
-            )}
 
             {member.barcode && (
               <MemberBarcodeCard
@@ -222,10 +191,9 @@ export default function MemberProfilePage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+                    </Card>
         </div>
       </div>
-
-      {/* Re-enroll dialog (Owner) */}
-      <Dialog open={enrollOpen} onOpenChange={setEnrollOpen}>
-        <Dial
+    </div>
+  );
+}

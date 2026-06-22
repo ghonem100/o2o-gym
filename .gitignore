@@ -22,4 +22,5 @@ frontend/public/models/*-shard*
 frontend/public/models/*manifest.json
 
 # OS / editor
-.DS_St
+.DS_Store
+Thumbs.db

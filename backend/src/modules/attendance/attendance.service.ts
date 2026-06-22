@@ -235,4 +235,8 @@ export async function getTodayAttendance(gymId: string) {
 }
 
 export class AlreadyCheckedInError extends Error {
- 
+  constructor(message: string) {
+    super(message);
+    this.name = 'AlreadyCheckedInError';
+  }
+}

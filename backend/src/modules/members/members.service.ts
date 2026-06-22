@@ -228,4 +228,9 @@ function normalizePhone(phone: string): string {
   return phone.replace(/^(\+20|0)/, '0');
 }
 
-export class NotFoun
+export class NotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}

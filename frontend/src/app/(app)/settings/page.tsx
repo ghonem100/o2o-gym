@@ -18,6 +18,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatDate, formatTime, formatCurrency } from '@/lib/utils';
+import { UsersTab } from '@/components/settings/users-tab';
 
 export default function SettingsPage() {
   return (
@@ -32,13 +33,15 @@ function SettingsContent() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
-      <Tabs defaultValue="plans">
+      <Tabs defaultValue="users">
         <TabsList className="flex-wrap">
+          <TabsTrigger value="users">المستخدمون</TabsTrigger>
           <TabsTrigger value="plans">{t('settingsExt.plansTab')}</TabsTrigger>
           <TabsTrigger value="gym">{t('settingsExt.gymTab')}</TabsTrigger>
           <TabsTrigger value="notif">{t('settingsExt.notificationsTab')}</TabsTrigger>
           <TabsTrigger value="history">{t('settingsExt.historyTab')}</TabsTrigger>
         </TabsList>
+        <TabsContent value="users" className="mt-4"><UsersTab /></TabsContent>
         <TabsContent value="plans"><PlansTab /></TabsContent>
         <TabsContent value="gym"><GymTab /></TabsContent>
         <TabsContent value="notif"><NotificationsTab /></TabsContent>

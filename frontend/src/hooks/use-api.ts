@@ -73,17 +73,6 @@ export function useCreateSubscription() {
 }
 
 // ── Attendance ──
-export function useFaceCheckIn() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (payload: { memberId: string; confidence: number }) => {
-      const { data } = await api.post<ApiResponse<CheckInResult>>('/attendance/face', payload);
-      return data.data;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['attendance-today'] }),
-  });
-}
-
 export function useBarcodeCheckIn() {
   const qc = useQueryClient();
   return useMutation({
