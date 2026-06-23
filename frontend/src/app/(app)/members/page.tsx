@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
-import { Search, Plus, Loader2, ScanFace, AlertTriangle } from 'lucide-react';
+import { Search, Plus, Loader2 } from 'lucide-react';
 import { useMembers } from '@/hooks/use-api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +70,6 @@ export default function MembersPage() {
                   <TableHead>{t('members.memberNumber')}</TableHead>
                   <TableHead>{t('members.phone')}</TableHead>
                   <TableHead>{t('subscriptions.plan')}</TableHead>
-                  <TableHead>{t('enrollment.title')}</TableHead>
                   <TableHead>{t('common.status')}</TableHead>
                   <TableHead>{t('members.memberSince')}</TableHead>
                 </TableRow>
@@ -94,19 +93,6 @@ export default function MembersPage() {
                         <Badge variant="outline">{m.activeSubscription.plan.name}</Badge>
                       ) : (
                         <span className="text-sm text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {m.hasFace ? (
-                        <Badge variant="success" className="gap-1">
-                          <ScanFace className="h-3 w-3" />
-                          {t('enrollment.enrolled')}
-                        </Badge>
-                      ) : (
-                        <Badge variant="warning" className="gap-1">
-                          <AlertTriangle className="h-3 w-3" />
-                          {t('enrollment.notEnrolled')}
-                        </Badge>
                       )}
                     </TableCell>
                     <TableCell>
