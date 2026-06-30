@@ -10,8 +10,8 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: 'O2O Gym — نظام إدارة الصالة الرياضية',
-  description: 'Professional gym management system for O2O Gym, El-Menoufia',
+  title: 'نظام إدارة الصالة الرياضية',
+  description: 'Professional gym management system',
 };
 
 export const viewport: Viewport = {

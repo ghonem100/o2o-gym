@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "O2O Gym",
+    "appName": "Gym System",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -46,7 +46,7 @@
   },
   "attendance": {
     "title": "Attendance",
-    "kioskTitle": "Welcome to O2O Gym",
+    "kioskTitle": "Welcome to Our Gym",
     "scanFace": "Face the camera",
     "scanning": "Scanning...",
     "welcomeBack": "Welcome back",

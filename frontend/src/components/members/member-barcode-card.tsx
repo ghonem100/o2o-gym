@@ -48,7 +48,7 @@ export function MemberBarcodeCard({ barcode, fullName, memberNumber, photoUrl, g
     const win = window.open('', '_blank', 'width=420,height=680');
     if (!win) return;
     const barcodeSvg = document.getElementById('member-barcode-svg')?.innerHTML ?? '';
-    const gymTitle = gymName ?? 'O2O Gym';
+    const gymTitle = gymName ?? 'الصالة الرياضية';
     const photoHtml = photoUrl
       ? '<img class="photo" src="' + photoUrl + '" />'
       : '<div class="photo-fallback">' + fullName.charAt(0) + '</div>';

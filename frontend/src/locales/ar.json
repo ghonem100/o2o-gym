@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "صالة O2O الرياضية",
+    "appName": "الصالة الرياضية",
     "loading": "جاري التحميل...",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -46,7 +46,7 @@
   },
   "attendance": {
     "title": "تسجيل الحضور",
-    "kioskTitle": "أهلاً بك في O2O Gym",
+    "kioskTitle": "أهلاً بك في الصالة الرياضية",
     "scanFace": "وجّه وجهك نحو الكاميرا",
     "scanning": "جاري المسح...",
     "welcomeBack": "أهلاً بعودتك",
