@@ -1,5 +1,6 @@
 import { Router, Response, NextFunction } from 'express';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import { requireOwner } from '../../middleware/rbac.middleware';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../types';
@@ -15,6 +16,7 @@ import * as ProductsService from './products.service';
 
 const router = Router();
 router.use(authenticate);
+router.use(checkGymActive);
 
 // ── List products (owner + receptionist) ──
 router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {

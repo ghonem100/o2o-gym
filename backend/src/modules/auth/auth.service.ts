@@ -12,19 +12,44 @@ const BCRYPT_ROUNDS = 12;
 export async function login(
   username: string,
   password: string,
-  req: Request
+  req: Request,
+  gymSlug?: string
 ): Promise<{ token: string; user: SafeUser }> {
-  const user = await prisma.user.findFirst({
-    where: { username },
-    include: { gym: { select: { id: true, name: true, isActive: true } } },
-  });
+  const gymSelect = {
+    select: { id: true, name: true, isActive: true, slug: true, subscriptionStatus: true },
+  };
+
+  let user;
+  if (gymSlug) {
+    // Gym-scoped login: resolve the slug first, then the user within that gym.
+    const gym = await prisma.gym.findUnique({ where: { slug: gymSlug }, select: { id: true } });
+    if (!gym) throw new UnauthorizedError('Invalid credentials');
+    user = await prisma.user.findFirst({
+      where: { username, gymId: gym.id },
+      include: { gym: gymSelect },
+    });
+  } else {
+    // No slug: prefer the platform super admin, fall back to legacy gym login.
+    user = await prisma.user.findFirst({
+      where: { username, role: 'super_admin' },
+      include: { gym: gymSelect },
+    });
+    if (!user) {
+      user = await prisma.user.findFirst({
+        where: { username },
+        include: { gym: gymSelect },
+      });
+    }
+  }
 
   if (!user || !user.isActive) {
     throw new UnauthorizedError('Invalid credentials');
   }
 
-  if (!user.gym.isActive) {
-    throw new UnauthorizedError('Gym account is inactive');
+  if (user.role !== 'super_admin') {
+    if (!user.gym || !user.gym.isActive) {
+      throw new UnauthorizedError('Gym account is inactive');
+    }
   }
 
   if (user.lockedUntil && user.lockedUntil > new Date()) {
@@ -75,7 +100,7 @@ export async function login(
 
   const payload: AuthPayload = {
     userId: user.id,
-    gymId: user.gymId,
+    gymId: user.gymId ?? '',
     role: user.role,
     username: user.username,
   };
@@ -84,14 +109,16 @@ export async function login(
     expiresIn: '8h',
   });
 
-  await createAuditLog({
-    gymId: user.gymId,
-    userId: user.id,
-    action: 'login',
-    entityType: 'user',
-    entityId: user.id,
-    req,
-  });
+  if (user.gymId) {
+    await createAuditLog({
+      gymId: user.gymId,
+      userId: user.id,
+      action: 'login',
+      entityType: 'user',
+      entityId: user.id,
+      req,
+    });
+  }
 
   const safeUser: SafeUser = {
     id: user.id,
@@ -99,8 +126,9 @@ export async function login(
     fullName: user.fullName,
     fullNameAr: user.fullNameAr,
     role: user.role,
-    gymId: user.gymId,
-    gymName: user.gym.name,
+    gymId: user.gymId ?? '',
+    gymName: user.gym?.name ?? 'المنصة',
+    gymSlug: user.gym?.slug ?? null,
   };
 
   return { token, user: safeUser };
@@ -111,6 +139,7 @@ export async function logout(
   gymId: string,
   req: Request
 ): Promise<void> {
+  if (!gymId) return; // super admin — no gym-scoped audit log
   await createAuditLog({
     gymId,
     userId,
@@ -154,7 +183,7 @@ export async function changePassword(
 export async function getMe(userId: string): Promise<SafeUser> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
-    include: { gym: { select: { id: true, name: true } } },
+    include: { gym: { select: { id: true, name: true, slug: true } } },
   });
 
   return {
@@ -163,8 +192,9 @@ export async function getMe(userId: string): Promise<SafeUser> {
     fullName: user.fullName,
     fullNameAr: user.fullNameAr,
     role: user.role,
-    gymId: user.gymId,
-    gymName: user.gym.name,
+    gymId: user.gymId ?? '',
+    gymName: user.gym?.name ?? 'المنصة',
+    gymSlug: user.gym?.slug ?? null,
   };
 }
 
@@ -176,6 +206,7 @@ export interface SafeUser {
   role: string;
   gymId: string;
   gymName: string;
+  gymSlug: string | null;
 }
 
 export class UnauthorizedError extends Error {

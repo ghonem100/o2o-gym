@@ -9,6 +9,11 @@ export const loginSchema = z.object({
     password: z
       .string()
       .min(6, 'Password must be at least 6 characters'),
+    gymSlug: z
+      .string()
+      .regex(/^[a-z0-9-]+$/, 'Invalid gym slug')
+      .max(50)
+      .optional(),
   }),
 });
 

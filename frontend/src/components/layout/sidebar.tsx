@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
@@ -44,12 +44,15 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const params = useParams();
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const logout = useLogout();
 
   if (!user) return null;
 
+  const slug = typeof params?.slug === 'string' ? params.slug : user.gymSlug;
+  const base = slug ? `/gym/${slug}` : '';
   const items = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
 
   return (
@@ -66,12 +69,13 @@ export function Sidebar() {
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
         {items.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + '/');
+          const href = `${base}${item.href}`;
+          const active = pathname === href || pathname.startsWith(href + '/');
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
-              href={item.href}
+              href={href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 active

@@ -17,20 +17,44 @@ async function main() {
   const ownerPassword = process.env.INITIAL_OWNER_PASSWORD || 'Admin@123';
   const ownerFullName = process.env.INITIAL_OWNER_FULLNAME || 'System Owner';
 
+  // ── Platform super admin (no gym) ──
+  const superUsername = process.env.SUPER_ADMIN_USERNAME || 'superadmin';
+  const superPassword = process.env.SUPER_ADMIN_PASSWORD || 'SuperAdmin@2026';
+  const existingSuper = await prisma.user.findFirst({ where: { role: 'super_admin' } });
+  if (!existingSuper) {
+    await prisma.user.create({
+      data: {
+        gymId: null,
+        username: superUsername,
+        passwordHash: await bcrypt.hash(superPassword, 12),
+        fullName: process.env.SUPER_ADMIN_FULLNAME || 'Ghonem',
+        fullNameAr: 'مدير المنصة',
+        role: 'super_admin',
+        isActive: true,
+      },
+    });
+    console.log(`✅ Super admin created: ${superUsername}`);
+  } else {
+    console.log(`ℹ️  Super admin already exists: ${existingSuper.username}`);
+  }
+
+  const gymSlug = process.env.INITIAL_GYM_SLUG || 'o2o-gym';
   let gym = await prisma.gym.findFirst({ where: { name: gymName } });
   if (!gym) {
     gym = await prisma.gym.create({
       data: {
         name: gymName,
         nameAr: 'صالة O2O الرياضية',
+        slug: gymSlug,
+        subscriptionStatus: 'active',
         city: process.env.INITIAL_GYM_CITY || 'El-Menoufia',
         currency: 'EGP',
         timezone: 'Africa/Cairo',
       },
     });
-    console.log(`✅ Gym created: ${gym.name} (${gym.id})`);
+    console.log(`✅ Gym created: ${gym.name} (${gym.id}) — /gym/${gym.slug}`);
   } else {
-    console.log(`ℹ️  Gym already exists: ${gym.name}`);
+    console.log(`ℹ️  Gym already exists: ${gym.name} — /gym/${gym.slug}`);
   }
 
   const existingOwner = await prisma.user.findFirst({ where: { gymId: gym.id, role: 'owner' } });

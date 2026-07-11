@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Search, Plus, Loader2 } from 'lucide-react';
 import { useMembers } from '@/hooks/use-api';
@@ -23,6 +24,7 @@ const statusVariant: Record<string, 'success' | 'secondary' | 'destructive'> = {
 
 export default function MembersPage() {
   const { t, i18n } = useTranslation();
+  const slug = String(useParams().slug ?? '');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [addOpen, setAddOpen] = useState(false);
@@ -78,7 +80,7 @@ export default function MembersPage() {
                 {members.map((m) => (
                   <TableRow key={m.id} className="cursor-pointer">
                     <TableCell>
-                      <Link href={`/members/${m.id}`} className="flex items-center gap-3 hover:text-primary">
+                      <Link href={`/gym/${slug}/members/${m.id}`} className="flex items-center gap-3 hover:text-primary">
                         <Avatar className="h-9 w-9">
                           {m.photoUrl && <AvatarImage src={m.photoUrl} />}
                           <AvatarFallback>{m.fullName.charAt(0)}</AvatarFallback>

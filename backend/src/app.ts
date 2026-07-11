@@ -14,6 +14,8 @@ import notificationsRoutes from './modules/notifications/notifications.routes';
 import settingsRoutes from './modules/settings/settings.routes';
 import uploadsRoutes from './modules/uploads/uploads.routes';
 import productsRoutes from './modules/products/products.routes';
+import superAdminRoutes from './modules/super-admin/super-admin.routes';
+import gymsPublicRoutes from './modules/gyms/gyms-public.routes';
 
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 
@@ -64,6 +66,8 @@ app.use(`${API_V1}/notifications`, notificationsRoutes);
 app.use(`${API_V1}/settings`, settingsRoutes);
 app.use(`${API_V1}/uploads`, uploadsRoutes);
 app.use(`${API_V1}/products`, productsRoutes);
+app.use(`${API_V1}/super-admin`, superAdminRoutes);
+app.use(`${API_V1}/gyms`, gymsPublicRoutes); // public slug resolver
 
 app.use(notFoundHandler);
 app.use(errorHandler);

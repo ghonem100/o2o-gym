@@ -8,6 +8,7 @@ interface AuthState {
   setAuth: (user: User, token: string) => void;
   clearAuth: () => void;
   isOwner: () => boolean;
+  isSuperAdmin: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,6 +19,8 @@ export const useAuthStore = create<AuthState>()(
       setAuth: (user, token) => {
         if (typeof window !== 'undefined') {
           localStorage.setItem('o2o-token', token);
+          // Plain key so the axios interceptor (non-React) can build slug URLs
+          if (user.gymSlug) localStorage.setItem('o2o-slug', user.gymSlug);
         }
         set({ user, token });
       },
@@ -28,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, token: null });
       },
       isOwner: () => get().user?.role === 'owner',
+      isSuperAdmin: () => get().user?.role === 'super_admin',
     }),
     { name: 'o2o-auth' }
   )

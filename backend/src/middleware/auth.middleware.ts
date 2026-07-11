@@ -20,7 +20,8 @@ export function authenticate(
       token,
       process.env.JWT_SECRET as string
     ) as AuthPayload;
-    req.user = payload;
+    // Super-admin tokens carry gymId: null — normalize to '' (see AuthPayload).
+    req.user = { ...payload, gymId: payload.gymId ?? '' };
     next();
   } catch {
     sendError(res, 'Invalid or expired token', 401);

@@ -3,6 +3,9 @@ import { UserRole } from '@prisma/client';
 
 export interface AuthPayload {
   userId: string;
+  // Empty string for super_admin (platform owner, no gym scope).
+  // Kept as `string` so all gym-scoped modules keep using req.user!.gymId;
+  // gym-scoped queries with '' simply match nothing.
   gymId: string;
   role: UserRole;
   username: string;

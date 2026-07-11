@@ -2,6 +2,7 @@ import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import { requireOwner } from '../../middleware/rbac.middleware';
 import { sendSuccess } from '../../utils/response';
 import { prisma } from '../../lib/prisma';
@@ -10,6 +11,7 @@ import { AuthRequest } from '../../types';
 
 const router = Router();
 router.use(authenticate);
+router.use(checkGymActive);
 
 export interface NotificationSettings {
   whatsappEnabled: boolean;

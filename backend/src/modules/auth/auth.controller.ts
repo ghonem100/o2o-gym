@@ -11,7 +11,7 @@ export async function loginHandler(
 ): Promise<void> {
   try {
     const { body } = loginSchema.parse({ body: req.body });
-    const result = await AuthService.login(body.username, body.password, req);
+    const result = await AuthService.login(body.username, body.password, req, body.gymSlug);
     sendSuccess(res, result, 'Login successful');
   } catch (err) {
     if (err instanceof AuthService.UnauthorizedError) {

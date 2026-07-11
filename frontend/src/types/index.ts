@@ -1,4 +1,4 @@
-export type Role = 'owner' | 'receptionist';
+export type Role = 'super_admin' | 'owner' | 'receptionist';
 
 export interface User {
   id: string;
@@ -8,6 +8,7 @@ export interface User {
   role: Role;
   gymId: string;
   gymName: string;
+  gymSlug: string | null;
 }
 
 export interface ApiResponse<T> {

@@ -20,10 +20,22 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('o2o-token');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+    if (typeof window !== 'undefined') {
+      const slug = localStorage.getItem('o2o-slug');
+
+      if (error.response?.status === 401) {
+        localStorage.removeItem('o2o-token');
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = slug ? `/gym/${slug}/login` : '/login';
+        }
+      }
+
+      // 402 = gym platform subscription suspended — the slug layout shows
+      // the suspension screen after re-resolving the gym status.
+      if (error.response?.status === 402 && slug) {
+        if (!window.location.pathname.endsWith(`/gym/${slug}`)) {
+          window.location.href = `/gym/${slug}`;
+        }
       }
     }
     return Promise.reject(error);

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import { requireOwner } from '../../middleware/rbac.middleware';
 import { sendSuccess } from '../../utils/response';
 import * as AnalyticsService from './analytics.service';
@@ -15,7 +16,7 @@ const dateRangeSchema = z.object({
 });
 
 const router = Router();
-router.use(authenticate, requireOwner);
+router.use(authenticate, checkGymActive, requireOwner);
 
 router.get('/dashboard', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Dumbbell, Users, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '@/lib/api';
@@ -20,6 +21,7 @@ import { formatTime } from '@/lib/utils';
 
 export default function AttendanceKioskPage() {
   const { t, i18n } = useTranslation();
+  const slug = String(useParams().slug ?? '');
   const [result, setResult] = useState<CheckInResult | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
 
@@ -81,7 +83,7 @@ export default function AttendanceKioskPage() {
           </div>
           <LanguageToggle />
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/members" title={t('nav.members')}>
+            <Link href={`/gym/${slug}/members`} title={t('nav.members')}>
               <ArrowLeft className="h-5 w-5 rtl:rotate-180" />
             </Link>
           </Button>

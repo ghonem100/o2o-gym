@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import { Role } from '@/types';
 import { Dumbbell } from 'lucide-react';
@@ -14,20 +14,35 @@ export function AuthGuard({
   allowedRoles?: Role[];
 }) {
   const router = useRouter();
+  const params = useParams();
+  const slug = typeof params?.slug === 'string' ? params.slug : null;
   const user = useAuthStore((s) => s.user);
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
+    const base = slug ? `/gym/${slug}` : '';
+
     if (!user) {
-      router.replace('/login');
+      router.replace(slug ? `${base}/login` : '/login');
       return;
     }
+
+    // A gym user must match the slug they are visiting
+    if (slug && user.role !== 'super_admin' && user.gymSlug !== slug) {
+      router.replace(`${base}/login`);
+      return;
+    }
+
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-      router.replace(user.role === 'owner' ? '/dashboard' : '/attendance');
+      if (user.role === 'super_admin') {
+        router.replace('/super-admin');
+      } else {
+        router.replace(user.role === 'owner' ? `${base}/dashboard` : `${base}/attendance`);
+      }
       return;
     }
     setChecked(true);
-  }, [user, allowedRoles, router]);
+  }, [user, allowedRoles, router, slug]);
 
   if (!checked) {
     return (

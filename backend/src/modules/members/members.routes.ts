@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import {
   createMemberHandler,
   listMembersHandler,
@@ -18,6 +19,7 @@ import { NotFoundError } from './members.service';
 const router = Router();
 
 router.use(authenticate);
+router.use(checkGymActive);
 
 // Face recognition endpoints (must precede /:id routes)
 router.get('/face-descriptors', async (req: AuthRequest, res: Response, next: NextFunction) => {

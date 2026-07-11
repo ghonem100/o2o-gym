@@ -11,8 +11,16 @@ datasource db {
 // ─────────────────────────────────────────────
 
 enum UserRole {
+  super_admin
   owner
   receptionist
+}
+
+enum TenantStatus {
+  trial
+  active
+  suspended
+  cancelled
 }
 
 enum PlanType {
@@ -98,21 +106,27 @@ enum Gender {
 // ─────────────────────────────────────────────
 
 model Gym {
-  id             String   @id @default(uuid())
-  name           String   @db.VarChar(100)
-  nameAr         String?  @map("name_ar") @db.VarChar(100)
-  address        String?  @db.Text
-  city           String?  @db.VarChar(50)
-  phone          String?  @db.VarChar(20)
-  whatsappNumber String?  @map("whatsapp_number") @db.VarChar(20)
-  smsSenderId    String?  @map("sms_sender_id") @db.VarChar(20)
-  currency       String   @default("EGP") @db.VarChar(3)
-  timezone       String   @default("Africa/Cairo") @db.VarChar(50)
-  isActive       Boolean  @default(true) @map("is_active")
-  settings       Json     @default("{}")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz()
+  id                 String       @id @default(uuid())
+  name               String       @db.VarChar(100)
+  nameAr             String?      @map("name_ar") @db.VarChar(100)
+  address            String?      @db.Text
+  city               String?      @db.VarChar(50)
+  phone              String?      @db.VarChar(20)
+  whatsappNumber     String?      @map("whatsapp_number") @db.VarChar(20)
+  smsSenderId        String?      @map("sms_sender_id") @db.VarChar(20)
+  currency           String       @default("EGP") @db.VarChar(3)
+  timezone           String       @default("Africa/Cairo") @db.VarChar(50)
+  isActive           Boolean      @default(true) @map("is_active")
+  settings           Json         @default("{}")
+  slug               String       @unique @db.VarChar(50)
+  subscriptionStatus TenantStatus @default(trial) @map("subscription_status")
+  subscriptionEndsAt DateTime?    @map("subscription_ends_at") @db.Timestamptz()
+  monthlyFee         Decimal?     @map("monthly_fee") @db.Decimal(10, 2)
+  tenantNotes        String?      @map("tenant_notes") @db.Text
+  createdAt          DateTime     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt          DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
 
+  tenantPayments    TenantPayment[]
   users             User[]
   subscriptionPlans SubscriptionPlan[]
   members           Member[]
@@ -131,7 +145,7 @@ model Gym {
 
 model User {
   id             String    @id @default(uuid())
-  gymId          String    @map("gym_id")
+  gymId          String?   @map("gym_id") // null for super_admin (platform owner)
   username       String    @db.VarChar(50)
   passwordHash   String    @map("password_hash") @db.VarChar(255)
   fullName       String    @map("full_name") @db.VarChar(100)
@@ -145,7 +159,7 @@ model User {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz()
 
-  gym                  Gym             @relation(fields: [gymId], references: [id])
+  gym                  Gym?            @relation(fields: [gymId], references: [id])
   membersCreated       Member[]        @relation("MemberCreatedBy")
   paymentsCollected    Payment[]       @relation("PaymentCollectedBy")
   paymentsRefunded     Payment[]       @relation("PaymentRefundedBy")
@@ -196,14 +210,14 @@ model Member {
   createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz()
   updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz()
 
-  gym             Gym             @relation(fields: [gymId], references: [id])
-  creator         User?           @relation("MemberCreatedBy", fields: [createdBy], references: [id])
-  face            MemberFace?
-  subscriptions   Subscription[]
-  payments        Payment[]
-  attendanceLogs  AttendanceLog[]
+  gym              Gym               @relation(fields: [gymId], references: [id])
+  creator          User?             @relation("MemberCreatedBy", fields: [createdBy], references: [id])
+  face             MemberFace?
+  subscriptions    Subscription[]
+  payments         Payment[]
+  attendanceLogs   AttendanceLog[]
   notificationsLog NotificationLog[]
-  productSales    ProductSale[]
+  productSales     ProductSale[]
 
   @@unique([gymId, phone])
   @@unique([gymId, memberNumber])
@@ -225,30 +239,30 @@ model MemberFace {
 }
 
 model Subscription {
-  id                 String             @id @default(uuid())
-  gymId              String             @map("gym_id")
-  memberId           String             @map("member_id")
-  planId             String             @map("plan_id")
-  status             SubscriptionStatus @default(active)
-  startDate          DateTime           @map("start_date") @db.Date
-  endDate            DateTime?          @map("end_date") @db.Date
-  sessionsTotal      Int?               @map("sessions_total")
-  sessionsRemaining  Int?               @map("sessions_remaining")
-  pricePaid          Decimal            @map("price_paid") @db.Decimal(10, 2)
-  originalPrice      Decimal            @map("original_price") @db.Decimal(10, 2)
-  discountId         String?            @map("discount_id")
-  discountAmount     Decimal            @default(0) @map("discount_amount") @db.Decimal(10, 2)
-  notes              String?            @db.Text
-  createdBy          String?            @map("created_by")
-  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz()
-  updatedAt          DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
+  id                String             @id @default(uuid())
+  gymId             String             @map("gym_id")
+  memberId          String             @map("member_id")
+  planId            String             @map("plan_id")
+  status            SubscriptionStatus @default(active)
+  startDate         DateTime           @map("start_date") @db.Date
+  endDate           DateTime?          @map("end_date") @db.Date
+  sessionsTotal     Int?               @map("sessions_total")
+  sessionsRemaining Int?               @map("sessions_remaining")
+  pricePaid         Decimal            @map("price_paid") @db.Decimal(10, 2)
+  originalPrice     Decimal            @map("original_price") @db.Decimal(10, 2)
+  discountId        String?            @map("discount_id")
+  discountAmount    Decimal            @default(0) @map("discount_amount") @db.Decimal(10, 2)
+  notes             String?            @db.Text
+  createdBy         String?            @map("created_by")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt         DateTime           @updatedAt @map("updated_at") @db.Timestamptz()
 
-  gym      Gym              @relation(fields: [gymId], references: [id])
-  member   Member           @relation(fields: [memberId], references: [id])
-  plan     SubscriptionPlan @relation(fields: [planId], references: [id])
-  discount Discount?        @relation(fields: [discountId], references: [id])
-  creator  User?            @relation(fields: [createdBy], references: [id])
-  payments Payment[]
+  gym            Gym              @relation(fields: [gymId], references: [id])
+  member         Member           @relation(fields: [memberId], references: [id])
+  plan           SubscriptionPlan @relation(fields: [planId], references: [id])
+  discount       Discount?        @relation(fields: [discountId], references: [id])
+  creator        User?            @relation(fields: [createdBy], references: [id])
+  payments       Payment[]
   attendanceLogs AttendanceLog[]
 
   @@index([memberId, status, endDate])
@@ -418,12 +432,27 @@ model ProductSale {
   soldBy        String        @map("sold_by")
   createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz()
 
-  gym     Gym      @relation(fields: [gymId], references: [id])
-  product Product  @relation(fields: [productId], references: [id])
-  member  Member?  @relation(fields: [memberId], references: [id])
-  seller  User     @relation(fields: [soldBy], references: [id])
+  gym     Gym     @relation(fields: [gymId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  member  Member? @relation(fields: [memberId], references: [id])
+  seller  User    @relation(fields: [soldBy], references: [id])
 
   @@index([gymId, createdAt])
   @@index([productId])
   @@map("product_sales")
+}
+
+model TenantPayment {
+  id        String   @id @default(uuid())
+  gymId     String   @map("gym_id")
+  amount    Decimal  @db.Decimal(10, 2)
+  month     String   @db.VarChar(7) // "2026-07"
+  paidAt    DateTime @default(now()) @map("paid_at") @db.Timestamptz()
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  gym Gym @relation(fields: [gymId], references: [id])
+
+  @@index([gymId, month])
+  @@map("tenant_payments")
 }

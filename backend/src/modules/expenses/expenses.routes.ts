@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import { requireOwner } from '../../middleware/rbac.middleware';
 import { sendSuccess, sendError } from '../../utils/response';
 import { prisma } from '../../lib/prisma';
@@ -33,6 +34,7 @@ const listExpensesSchema = z.object({
 
 const router = Router();
 router.use(authenticate);
+router.use(checkGymActive);
 
 router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {

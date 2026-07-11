@@ -1,12 +1,14 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import { sendSuccess, sendError } from '../../utils/response';
 import { AuthRequest } from '../../types';
 import { uploadImage, isCloudinaryConfigured } from '../../lib/cloudinary';
 
 const router = Router();
 router.use(authenticate);
+router.use(checkGymActive);
 
 const uploadSchema = z.object({
   body: z.object({

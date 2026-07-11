@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authenticate } from '../../middleware/auth.middleware';
+import { checkGymActive } from '../../middleware/gym-status.middleware';
 import {
   faceCheckInHandler,
   barcodeCheckInHandler,
@@ -11,6 +12,7 @@ import {
 const router = Router();
 
 router.use(authenticate);
+router.use(checkGymActive);
 
 router.get('/', listAttendanceHandler);
 router.get('/today', todayAttendanceHandler);

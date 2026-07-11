@@ -55,6 +55,7 @@ export default function MemberProfilePage() {
   const { t, i18n } = useTranslation();
   const params = useParams();
   const id = params.id as string;
+  const slug = String(params.slug ?? '');
   const gymName = useAuthStore((s) => s.user?.gymName);
 
   const { data, isLoading } = useMemberProfile(id);
@@ -71,7 +72,7 @@ export default function MemberProfilePage() {
   return (
     <div className="space-y-6 p-6 lg:p-8">
       <Button variant="ghost" size="sm" asChild className="gap-2">
-        <Link href="/members">
+        <Link href={`/gym/${slug}/members`}>
           <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
           {t('members.title')}
         </Link>
