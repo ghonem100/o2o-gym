@@ -32,12 +32,16 @@ export default function TenantGymDetailPage() {
   const setStatus = useSetTenantStatus();
   const recordPayment = useRecordTenantPayment();
 
+  const [name, setName] = useState('');
+  const [nameAr, setNameAr] = useState('');
   const [fee, setFee] = useState('');
   const [notes, setNotes] = useState('');
   const [payment, setPayment] = useState({ amount: '', month: format(new Date(), 'yyyy-MM'), notes: '' });
 
   useEffect(() => {
     if (gym) {
+      setName(gym.name);
+      setNameAr(gym.nameAr ?? '');
       setFee(gym.monthlyFee ? String(Number(gym.monthlyFee)) : '');
       setNotes(gym.tenantNotes ?? '');
     }
@@ -52,13 +56,22 @@ export default function TenantGymDetailPage() {
   }
 
   const saveInfo = () => {
-    update.mutate(
-      { id, monthlyFee: fee ? Number(fee) : null, notes: notes || null },
-      {
-        onSuccess: () => toast.success('تم الحفظ'),
-        onError: (err) => toast.error(getApiErrorMessage(err)),
-      }
-    );
+    if (name.trim().length < 2) {
+      toast.error('اسم الجيم يجب أن يكون حرفين على الأقل');
+      return;
+    }
+    const payload: Record<string, unknown> = {
+      id,
+      gymName: name.trim(),
+      monthlyFee: fee ? Number(fee) : null,
+      notes: notes || null,
+    };
+    // Backend requires min 2 chars when provided — skip if cleared
+    if (nameAr.trim().length >= 2) payload.gymNameAr = nameAr.trim();
+    update.mutate(payload as { id: string } & Record<string, unknown>, {
+      onSuccess: () => toast.success('تم الحفظ'),
+      onError: (err) => toast.error(getApiErrorMessage(err)),
+    });
   };
 
   const toggleStatus = () => {
@@ -178,12 +191,22 @@ export default function TenantGymDetailPage() {
           </CardContent>
         </Card>
 
-        {/* Fee + notes */}
+        {/* Gym info + fee + notes */}
         <Card>
           <CardHeader>
-            <CardTitle>بيانات الاشتراك</CardTitle>
+            <CardTitle>بيانات الجيم والاشتراك</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label>اسم الجيم (إنجليزي)</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>اسم الجيم (عربي)</Label>
+                <Input value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label>الرسوم الشهرية (ج.م)</Label>
               <Input type="number" min="0" value={fee} onChange={(e) => setFee(e.target.value)} className="w-40" />
