@@ -40,6 +40,13 @@ async function main() {
 
   const gymSlug = process.env.INITIAL_GYM_SLUG || 'o2o-gym';
   let gym = await prisma.gym.findFirst({ where: { name: gymName } });
+  // SaaS guard: only create the demo gym on an EMPTY database. On a live
+  // multi-tenant DB, gyms are created from the super-admin panel instead.
+  if (!gym && (await prisma.gym.count()) > 0) {
+    console.log('ℹ️  Gyms already exist — skipping demo gym (create tenants via super admin)');
+    console.log('✅ Seed complete');
+    return;
+  }
   if (!gym) {
     gym = await prisma.gym.create({
       data: {
