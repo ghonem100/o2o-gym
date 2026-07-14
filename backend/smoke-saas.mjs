@@ -1,5 +1,15 @@
 // End-to-end smoke test for the SaaS layer.
+import fs from 'fs';
 const BASE = 'http://localhost:5000/api/v1';
+// Read the super admin password from .env (rotated — never hardcode it here)
+const SA_PASSWORD = (() => {
+  try {
+    return fs.readFileSync(new URL('./.env', import.meta.url), 'utf8')
+      .match(/SUPER_ADMIN_PASSWORD=(.+)/)?.[1]?.trim() || 'SuperAdmin@2026';
+  } catch {
+    return 'SuperAdmin@2026';
+  }
+})();
 let pass = 0, fail = 0;
 function log(n, ok, d = '') { ok ? (pass++, console.log(`  ✅ ${n}${d ? ' — ' + d : ''}`)) : (fail++, console.log(`  ❌ ${n}${d ? ' — ' + d : ''}`)); }
 async function req(method, path, { token, body } = {}) {
@@ -15,7 +25,7 @@ async function req(method, path, { token, body } = {}) {
 console.log('\n=== SAAS SMOKE TEST ===\n');
 
 // 1. Super admin login (no slug)
-const saLogin = await req('POST', '/auth/login', { body: { username: 'superadmin', password: 'SuperAdmin@2026' } });
+const saLogin = await req('POST', '/auth/login', { body: { username: 'superadmin', password: SA_PASSWORD } });
 const sa = saLogin.json?.data?.token;
 log('Super admin login (no gymSlug)', saLogin.status === 200 && saLogin.json?.data?.user?.role === 'super_admin');
 
