@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "الصالة الرياضية",
+    "appName": "FitFlow",
     "loading": "جاري التحميل...",
     "save": "حفظ",
     "cancel": "إلغاء",
@@ -46,7 +46,7 @@
   },
   "attendance": {
     "title": "تسجيل الحضور",
-    "kioskTitle": "أهلاً بك في الصالة الرياضية",
+    "kioskTitle": "أهلاً بك في FitFlow",
     "scanFace": "وجّه وجهك نحو الكاميرا",
     "scanning": "جاري المسح...",
     "welcomeBack": "أهلاً بعودتك",

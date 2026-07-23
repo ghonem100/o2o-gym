@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Gym System",
+    "appName": "FitFlow",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -46,7 +46,7 @@
   },
   "attendance": {
     "title": "Attendance",
-    "kioskTitle": "Welcome to Our Gym",
+    "kioskTitle": "Welcome to FitFlow",
     "scanFace": "Face the camera",
     "scanning": "Scanning...",
     "welcomeBack": "Welcome back",

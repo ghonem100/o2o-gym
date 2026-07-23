@@ -10,7 +10,7 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: 'نظام إدارة الصالة الرياضية',
+  title: 'FitFlow — نظام إدارة الصالات الرياضية',
   description: 'Professional gym management system',
 };
 

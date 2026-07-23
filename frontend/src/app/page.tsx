@@ -49,7 +49,7 @@ export default function LandingPage() {
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Dumbbell className="h-6 w-6" />
           </div>
-          <span className="text-lg font-bold">نظام إدارة الصالات الرياضية</span>
+          <span className="text-lg font-bold">FitFlow</span>
         </div>
         <Link
           href="/login"
