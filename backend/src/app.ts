@@ -29,9 +29,23 @@ app.use(
   })
 );
 
+// FRONTEND_URL may hold one origin or a comma-separated list, so multiple
+// frontend domains (e.g. an old and a new Vercel URL) can be allowed at once.
+const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin(origin, callback) {
+      // Non-browser requests (curl, health checks) send no Origin — allow them.
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   })
